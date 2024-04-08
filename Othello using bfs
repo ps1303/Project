@@ -1,0 +1,479 @@
+import java.io.*;
+import java.util.*;
+
+public class Othello {
+    int turn;
+    int winner;
+    int board[][];
+    //add required class variables here
+    OthelloNode root;
+    class OthelloNode{
+        int[] position;
+        int[][] boardAtPoint;
+        int Score;
+        ArrayList<OthelloNode> children;
+        int level;
+        OthelloNode(int [][]a){
+            position=new int[2];
+            children=new ArrayList<>();
+            this.boardAtPoint=a;
+            this.level=0;
+            this.Score=0;
+        }
+    }
+    public Othello(String filename) throws Exception {
+        File file = new File(filename);
+        Scanner sc = new Scanner(file);
+        turn = sc.nextInt();
+        board = new int[8][8];
+        for(int i = 0; i < 8; ++i) {
+            for(int j = 0; j < 8; ++j){
+                board[i][j] = sc.nextInt();
+            }
+        }
+        winner = -1;
+        
+    }
+
+    private int endScore(OthelloNode a,int l){
+        if(a.children.size()==0){
+            a.Score=Scoring(a.boardAtPoint);
+            return a.Score;
+        }
+        int[] chilscore=new int[a.children.size()];
+        for(int i=0;i<a.children.size();i++){
+            chilscore[i]=endScore(a.children.get(i), l+1);
+        }
+        if(l%2==0){
+            int end=chilscore[0];
+            for(int i=0;i<chilscore.length;i++){
+                if(end<chilscore[i]){
+                    end=chilscore[i];
+                }
+            }
+            a.Score=end;
+            return a.Score;
+        }
+        if(l%2==1){
+            int end=chilscore[0];
+            for(int i=0;i<chilscore.length;i++){
+                if(end>chilscore[i]){
+                    end=chilscore[i];
+                }
+            }
+            a.Score=end;
+            return a.Score;
+        }
+        return a.Score;
+    }
+    private int Scoring(int[][] board){
+        int bbc=0;
+        int twc=0;
+        for(int i=0;i<board.length;i++){
+            for(int j=0;j<board[0].length;j++){
+                if(board[i][j]==0){
+                    bbc++;
+                }
+                else if(board[i][j]==1){
+                    twc++;
+                }
+            }
+        }
+        if(turn==0){
+            return bbc-twc;
+        }
+        return  twc-bbc;
+    }
+
+
+    public int boardScore() {
+        /* Complete this function to return num_black_tiles - num_white_tiles if turn = 0, 
+         * and num_white_tiles-num_black_tiles otherwise. 
+        */
+        int bbc=0;
+        int twc=0;
+        for(int i=0;i<board.length;i++){
+            for(int j=0;j<board[0].length;j++){
+                if(board[i][j]==0){
+                    bbc++;
+                }
+                else if(board[i][j]==1){
+                    twc++;
+                }
+            }
+        }
+        if(turn==0){
+            return bbc-twc;
+        }
+        return twc-bbc;
+    }
+
+    private ArrayList<int[]> giveit(int[][] board,int turn){
+        ArrayList<int[]> ans=new ArrayList<>();
+        int[][] niggaboard=new int[8][8];
+        for(int a=0;a<8;a++){
+            for(int b=0;b<8;b++){
+                niggaboard[a][b]=0;
+            }
+        }
+        int nturn;
+        if(turn==0){
+            nturn=1;
+        }else{
+            nturn=0;
+        }
+        for(int a=0;a<8;a++){
+            for(int b=0;b<8;b++){
+                if(board[a][b]==turn){
+                    int i=a;
+                    int j=b;
+                    i--;
+                    while(i>=0 && board[i][j]==nturn){
+                        i--;
+                    }
+                    if(i>=0 && i!=a-1 && board[i][j]==-1){
+                        niggaboard[i][j]=1;
+                    }
+                    i=a;
+                    j--;
+                    while(j>=0 && board[i][j]==nturn){
+                        j--;
+                    }
+                    if(j>=0 && j!=b-1&& board[i][j]==-1){
+                        niggaboard[i][j]=1;
+                    }
+                    j=b;
+                    i++;
+                    while(i<8 &&board[i][j]==nturn){
+                        i++;
+                    }
+                    if(i<8 && i!=a+1&& board[i][j]==-1){
+                        niggaboard[i][j]=1;
+                    }
+                    i=a;
+                    j++;
+                    while(j<8 && board[i][j]==nturn){
+                        j++;
+                    }
+                    if(j<8 && j!=b+1&& board[i][j]==-1){
+                        niggaboard[i][j]=1;
+                    }
+                    j=b;
+                    i--;j--;
+                    while(i>=0 && j>=0 && board[i][j]==nturn){
+                        i--;j--;
+                    }
+                    if(j>=0 &&i>=0 &&i!=a-1 &&j!=b-1&& board[i][j]==-1){
+                        niggaboard[i][j]=1;
+                    }
+                    i=a;
+                    j=b;
+                    i++;j--;
+                    while(i<8 && j>=0 && board[i][j]==nturn){
+                        i++;j--;
+                    }
+                    if(j>=0 &&i<8 &&i!=a+1 &&j!=b-1&& board[i][j]==-1){
+                        niggaboard[i][j]=1;
+                    }
+                    i=a;
+                    j=b;
+                    i--;j++;
+                    while(i>=0 && j<8 && board[i][j]==nturn){
+                        i--;j++;
+                    }
+                    if(j<8 &&i>0 &&i!=a-1 &&j!=b+1&& board[i][j]==-1){
+                        niggaboard[i][j]=1;
+                    }
+                    i=a;
+                    j=b;
+                    i++;j++;
+                    while(i<8 && j<8 && board[i][j]==nturn){
+                        i++;j++;
+                    }
+                    if(j<8 &&i<8 &&i!=a+1 &&j!=b+1&& board[i][j]==-1){
+                        niggaboard[i][j]=1;
+                    }
+                }
+            }
+        }
+        for(int a=0;a<8;a++){
+            for(int b=0;b<8;b++){
+                if(niggaboard[a][b]==1){
+                    int[] arr={a,b};
+                    ans.add(arr);
+                }
+            }
+        }
+        return ans;
+    }
+
+    private int[][] moves(int[] a,int[][]board,int turn){
+        int[][] boardAtPoin=new int[8][8];
+        for(int i = 0; i < 8; ++i)
+            System.arraycopy(board[i], 0, boardAtPoin[i], 0, 8);
+        int i=a[0];
+        int j=a[1];
+        int nturn;
+        if(turn==0){
+            nturn=1;
+        }else{
+            nturn=0;
+        }
+        i--;
+        while(i>=0 && boardAtPoin[i][j]==nturn){
+            i--;
+        }
+        if(i>=0 && i!=a[0]-1 &&boardAtPoin[i][j]==turn){
+            while(i<=a[0]){
+                boardAtPoin[i][j]=turn;
+                i++;
+            }
+        }
+        i=a[0];
+        j--;
+        while(j>=0 && boardAtPoin[i][j]==nturn){
+            j--;
+        }
+        if(j>=0 && j!=a[1]-1&&boardAtPoin[i][j]==turn){
+            while(j<=a[1]){
+                boardAtPoin[i][j]=turn;
+                j++;
+            }
+        }
+        j=a[1];
+        i++;
+        while(i<8 && boardAtPoin[i][j]==nturn){
+            i++;
+        }
+        if(i<8 && i!=a[0]+1 &&boardAtPoin[i][j]==turn){
+            while(i>=a[0]){
+                boardAtPoin[i][j]=turn;
+                i--;
+            }
+        }
+        i=a[0];
+        j++;
+        while(j<8 &&boardAtPoin[i][j]==nturn){
+            j++;
+        }
+        if(j<8 && j!=a[1]+1 &&boardAtPoin[i][j]==turn){
+            while(j>=a[1]){
+                boardAtPoin[i][j]=turn;
+                j--;
+            }
+        }
+        j=a[1];
+        i--;j--;
+        while(i>=0 && j>=0 && boardAtPoin[i][j]==nturn){
+            i--;j--;
+        }
+        if(j>=0 &&i>=0 &&i!=a[0]-1 &&j!=a[1]-1&&boardAtPoin[i][j]==turn){
+            while(j<=a[1] &&i<=a[0]){
+                boardAtPoin[i][j]=turn;
+                i++;j++;
+            }
+        }
+        i=a[0];
+        j=a[1];
+        i++;j--;
+        while(i<8 && j>=0 && boardAtPoin[i][j]==nturn){
+            i++;j--;
+        }
+        if(j>=0 &&i<8 &&i!=a[0]+1 &&j!=a[1]-1&&boardAtPoin[i][j]==turn){
+            while(j<=a[1] &&i>=a[0]){
+                boardAtPoin[i][j]=turn;
+                i--;j++;
+            }
+        }
+        i=a[0];
+        j=a[1];
+        i--;j++;
+        while(i>=0 && j<8 && boardAtPoin[i][j]==nturn){
+            i--;j++;
+        }
+        if(j<8 &&i>0 &&i!=a[0]-1 &&j!=a[1]+1&&boardAtPoin[i][j]==turn){
+            while(j>=a[1] &&i<=a[0]){
+                boardAtPoin[i][j]=turn;
+                i++;j--;
+            }
+        }
+        i=a[0];
+        j=a[1];
+        i++;j++;
+        while(i<8 && j<8 && boardAtPoin[i][j]==nturn){
+            i++;j++;
+        }
+        if(j<8 &&i<8 &&i!=a[0]+1 &&j!=a[1]+1&&boardAtPoin[i][j]==turn){
+            while(j>=a[1] &&i>=a[0]){
+                boardAtPoin[i][j]=turn;
+                i--;j--;
+            }
+        }
+        return boardAtPoin;
+    }
+    private boolean completetree(int[][] a){
+        for(int i=0;i<a.length;i++){
+            for(int j=0;j<a[0].length;j++) {
+                if(a[i][j]==-1){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    private int whowins(int[][] board){
+        int bbc=0;
+        int twc=0;
+        for(int i=0;i<board.length;i++){
+            for(int j=0;j<board[0].length;j++){
+                if(board[i][j]==0){
+                    bbc++;
+                }
+                else if(board[i][j]==1){
+                    twc++;
+                }
+            }
+        }
+        return bbc-twc;
+    }
+    private void putchildren(OthelloNode a,int depth,int k){
+        if(depth==k){
+            return;
+        }
+        depth++;
+        if(completetree(a.boardAtPoint)){
+            return;
+        }
+        int u=0;
+        int v=0;
+        if(turn==0){
+            if(depth%2==0){
+                u=1;
+                v=0;
+            }
+            if(depth%2==1){
+                u=0;
+                v=1;
+            }
+        }
+        if(turn==1){
+            if(depth%2==0){
+                u=0;
+                v=1;
+            }
+            if(depth%2==1){
+                u=1;
+                v=0;
+            }
+        }
+        
+        ArrayList<int[]> give=giveit(a.boardAtPoint,u);
+        if(give.size()==0){
+            if(giveit(board, v).size()==0){
+                return;
+            }
+            OthelloNode z=new OthelloNode(a.boardAtPoint);
+                z.position=a.position;
+                a.children.add(z);
+                putchildren(a.children.get(0), depth, k);
+        }
+        for(int i=0;i<give.size();i++){
+            int[] arr=give.get(i);
+            int[][] newboard=moves(arr, a.boardAtPoint, u);
+            OthelloNode q=new OthelloNode(newboard);
+            q.position=arr;
+            a.children.add(q);
+        }
+        for(int n=0;n<a.children.size();n++){
+            putchildren(a.children.get(n), depth, k);
+        }
+    }
+
+    public int bestMove(int k) {
+        // for(int i=0;i<8;i++){
+        //     for(int j=0;j<8;j++){
+        //         System.out.print(board[i][j]+" ");
+        //     }
+        //     System.out.println();
+        // }
+        // System.out.println(k);
+        this.root=new OthelloNode(board);
+        endScore(root, 0);
+        int depth=0;
+        putchildren(root, depth, k);
+        endScore(root, 0);
+        int z=root.Score;
+        Integer min=null;
+        for(int j=0;j<root.children.size();j++){
+            int[] potcvidk=root.children.get(j).position;
+            if(root.children.get(j).Score==z&&(min==null||min>((8*potcvidk[0])+potcvidk[1]))){
+                root.position=root.children.get(j).position;
+                min=(8*potcvidk[0])+potcvidk[1];
+            }
+        }
+        // System.out.println( root.position[0]*8+root.position[1]);
+        return root.position[0]*8+root.position[1];
+    }
+
+    public ArrayList<Integer> fullGame(int k) {
+        ArrayList<Integer> ans=new ArrayList<>();
+        while(!completetree(board)){
+            OthelloNode start=new OthelloNode(board);
+            endScore(start, 0);
+            putchildren(start, 0, k);
+            endScore(start, 0);
+            if(start.children.size()==0){
+                break;
+            }
+            int z=start.Score;
+            int v=-1;
+            Integer min=null;
+            for(int j=0;j<start.children.size();j++){
+                int[] potcvidk=start.children.get(j).position;
+                if(start.children.get(j).Score==z&&(min==null||min>((8*potcvidk[0])+potcvidk[1]))){
+                    start.position=start.children.get(j).position;
+                    min=(8*potcvidk[0])+potcvidk[1];
+                    v=j;
+                }
+            }ans.add(bestMove(k));
+            board=start.children.get(v).boardAtPoint;
+            if(turn==0){
+                turn=1;
+            }
+            else if(turn==1){
+                turn=0;
+            }
+        }
+        if(whowins(board)>0){
+            winner=0;
+        }
+        else if(whowins(board)<0){
+            winner= 1;
+        }
+        else if(whowins(board)==0){
+            winner= -1;
+        }
+        return ans;
+    }
+
+    public int[][] getBoardCopy() {
+        int copy[][] = new int[8][8];
+        for(int i = 0; i < 8; ++i)
+            System.arraycopy(board[i], 0, copy[i], 0, 8);
+        return copy;
+    }
+
+    public int getWinner() {
+        return winner;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+    // public static void main(String[] args) throws Exception {
+    //     Othello ne=new Othello("input.txt");
+    //     System.out.println(ne.bestMove(8));
+    //     // System.out.println(ne.fullGame(6));
+    // }
+}
+
